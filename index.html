@@ -18,7 +18,7 @@
             margin: 0 auto;
         }
         h1 { 
-            color: #d2ff28;
+            color: #d2ff28; /* Amarillo llamativo */
             font-size: 24px;
             margin-top: 15px;
             margin-bottom: 5px; 
@@ -26,7 +26,7 @@
             letter-spacing: 1px;
         }
         .subtitulo { 
-            color: #00ea97;
+            color: #00ea97; /* Verde */
             font-weight: bold;
             margin-top: 0;
             font-size: 16px;
@@ -140,11 +140,11 @@
     <script>
         const MI_WHATSAPP = "573142571260"; 
 
-        // 🔗 ENLACES REALES DE TU FORMULARIO CONECTADOS
+        // 🔗 TU EXCEL Y FORMULARIO REALES VINCULADOS
         const URL_FORM_RESPONSE = "https://docs.google.com/forms/d/e/1FAIpQLSdf97h8Cclw_RmsI8_Yg1rY3XU3F6pG7rTzXw3IuMhVvA_qEg/formResponse";
         const ID_PREGUNTA_NOMBRE = "entry.2117565814"; 
         const ID_PREGUNTA_NUMERO = "entry.642137937"; 
-        const URL_EXCEL_CSV = "https://docs.google.com/spreadsheets/d/17KNjc6sLGlnoEa0khxbewA_uwEXAKnKiKbu2vKxRWBA/pub?output=csv";
+        const URL_EXCEL_CSV = "https://docs.google.com/spreadsheets/d/17KNjC6sLGInoEa0khxbewA_uwEXAKnKiKbu2vKxRWBA/pub?output=csv";
 
         const misNumeros = [
             "4878", "3614", "2479", "5021", "6271", "7411", "9803", "1223", "0076", "8690",
@@ -157,7 +157,7 @@
 
         async function consultarVendidos() {
             try {
-                // Forzar que lea el Excel en vivo agregando un código de tiempo al final
+                // Forzar lectura limpia sin caché
                 const res = await fetch(URL_EXCEL_CSV + "&nocache=" + new Date().getTime());
                 const texto = await res.text();
                 numerosVendidos = [];
@@ -208,7 +208,7 @@
                 return;
             }
 
-            // Enviar datos en segundo plano a Google Sheets
+            // Enviar los datos en segundo plano a Google Sheets
             const datosForm = new FormData();
             datosForm.append(ID_PREGUNTA_NOMBRE, nombre);
             datosForm.append(ID_PREGUNTA_NUMERO, numeroSeleccionado);
@@ -218,18 +218,17 @@
                 mode: "no-cors",
                 body: datosForm
             }).then(() => {
-                // Abrir el chat de WhatsApp
                 const textoMensaje = `¡Hola! Vengo de la web y quiero separar una boleta.%0A%0A👤 *Nombre:* ${nombre}%0A🎟️ *Número Elegido:* ${numeroSeleccionado}%0A%0APor favor, pásame los datos de pago para asegurar mi número.`;
                 const urlWhatsApp = `https://api.whatsapp.com/send?phone=${MI_WHATSAPP}&text=${textoMensaje}`;
 
-                alert("¡Número apartado con éxito! Se abrirá WhatsApp para coordinar el pago.");
+                alert("¡Número apartado con éxito! Se abrirá WhatsApp para finalizar.");
                 window.open(urlWhatsApp, '_blank');
                 
                 setTimeout(() => {
                     location.reload();
-                }, 1000);
+                }, 1200);
             }).catch(err => {
-                alert("Hubo un pequeño problema al conectar. Inténtalo de nuevo.");
+                alert("Hubo un problema al guardar. Inténtalo de nuevo.");
             });
         }
 
