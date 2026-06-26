@@ -18,7 +18,7 @@
             margin: 0 auto;
         }
         h1 { 
-            color: #d2ff28; /* Amarillo llamativo del cartel */
+            color: #d2ff28;
             font-size: 24px;
             margin-top: 15px;
             margin-bottom: 5px; 
@@ -26,7 +26,7 @@
             letter-spacing: 1px;
         }
         .subtitulo { 
-            color: #00ea97; /* Verde del cartel */
+            color: #00ea97;
             font-weight: bold;
             margin-top: 0;
             font-size: 16px;
@@ -98,10 +98,6 @@
             color: white;
             font-size: 16px;
         }
-        input:focus {
-            outline: none;
-            border-color: #00ea97;
-        }
         button {
             background-color: #25d366;
             color: white;
@@ -112,7 +108,6 @@
             border-radius: 8px;
             cursor: pointer;
             width: 95%;
-            box-shadow: 0px 4px 10px rgba(37, 211, 102, 0.3);
         }
         button:hover { background-color: #1ebd58; }
     </style>
@@ -145,10 +140,10 @@
     <script>
         const MI_WHATSAPP = "573142571260"; 
 
-        // 🔗 ENLACES DE CONEXIÓN CON GOOGLE CONFIGURADOS
-        const URL_FORM_RESPONSE = "https://docs.google.com/forms/d/e/1FAIpQLSclX8E7bHnVRjFwL89YfHk5NfGvZ8mOkdG9bV6x_v-e6XAwGA/formResponse";
-        const ID_PREGUNTA_NOMBRE = "entry.1039475821"; 
-        const ID_PREGUNTA_NUMERO = "entry.1849502847"; 
+        // 🔗 ENLACES REALES DE TU FORMULARIO CONECTADOS
+        const URL_FORM_RESPONSE = "https://docs.google.com/forms/d/e/1FAIpQLSdf97h8Cclw_RmsI8_Yg1rY3XU3F6pG7rTzXw3IuMhVvA_qEg/formResponse";
+        const ID_PREGUNTA_NOMBRE = "entry.2117565814"; 
+        const ID_PREGUNTA_NUMERO = "entry.642137937"; 
         const URL_EXCEL_CSV = "https://docs.google.com/spreadsheets/d/17KNjc6sLGlnoEa0khxbewA_uwEXAKnKiKbu2vKxRWBA/pub?output=csv";
 
         const misNumeros = [
@@ -162,7 +157,8 @@
 
         async function consultarVendidos() {
             try {
-                const res = await fetch(URL_EXCEL_CSV);
+                // Forzar que lea el Excel en vivo agregando un código de tiempo al final
+                const res = await fetch(URL_EXCEL_CSV + "&nocache=" + new Date().getTime());
                 const texto = await res.text();
                 numerosVendidos = [];
                 misNumeros.forEach(num => {
@@ -212,7 +208,7 @@
                 return;
             }
 
-            // Enviar datos de forma asíncrona a Google Sheets
+            // Enviar datos en segundo plano a Google Sheets
             const datosForm = new FormData();
             datosForm.append(ID_PREGUNTA_NOMBRE, nombre);
             datosForm.append(ID_PREGUNTA_NUMERO, numeroSeleccionado);
@@ -221,17 +217,20 @@
                 method: "POST",
                 mode: "no-cors",
                 body: datosForm
+            }).then(() => {
+                // Abrir el chat de WhatsApp
+                const textoMensaje = `¡Hola! Vengo de la web y quiero separar una boleta.%0A%0A👤 *Nombre:* ${nombre}%0A🎟️ *Número Elegido:* ${numeroSeleccionado}%0A%0APor favor, pásame los datos de pago para asegurar mi número.`;
+                const urlWhatsApp = `https://api.whatsapp.com/send?phone=${MI_WHATSAPP}&text=${textoMensaje}`;
+
+                alert("¡Número apartado con éxito! Se abrirá WhatsApp para coordinar el pago.");
+                window.open(urlWhatsApp, '_blank');
+                
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            }).catch(err => {
+                alert("Hubo un pequeño problema al conectar. Inténtalo de nuevo.");
             });
-
-            const textoMensaje = `¡Hola! Vengo de la web y quiero separar una boleta.%0A%0A👤 *Nombre:* ${nombre}%0A🎟️ *Número Elegido:* ${numeroSeleccionado}%0A%0APor favor, pásame los datos de pago para asegurar mi número.`;
-            const urlWhatsApp = `https://api.whatsapp.com/send?phone=${MI_WHATSAPP}&text=${textoMensaje}`;
-
-            alert("¡Número apartado con éxito! Se abrirá WhatsApp para finalizar.");
-            window.open(urlWhatsApp, '_blank');
-            
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
         }
 
         consultarVendidos();
