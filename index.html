@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rifa La Baratica No. 1 - Ventas</title>
+    <style>
+        body {
+            background-color: #0b0f14;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            padding: 15px;
+            margin: 0;
+        }
+        .contenedor-principal {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        h1 { 
+            color: #d2ff28; /* Amarillo llamativo del cartel */
+            font-size: 24px;
+            margin-top: 15px;
+            margin-bottom: 5px; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .subtitulo { 
+            color: #00ea97; /* Verde del cartel */
+            font-weight: bold;
+            margin-top: 0;
+            font-size: 16px;
+        }
+        /* ESTILO PARA LA FOTO DE TU BOLETA */
+        .imagen-cartel {
+            width: 100%;
+            max-width: 450px;
+            border-radius: 12px;
+            border: 2px solid #30363d;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.5);
+            margin-bottom: 15px;
+        }
+        .info-rifa {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #8b949e;
+            margin-bottom: 20px;
+        }
+        .grid-numeros {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+        .numero {
+            background-color: #1f242c;
+            border: 2px solid #30363d;
+            padding: 18px 0;
+            font-weight: bold;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #ffffff;
+        }
+        .numero:hover { border-color: #d2ff28; }
+        .numero.seleccionado {
+            background-color: #d2ff28;
+            color: #0b0f14;
+            border-color: #d2ff28;
+        }
+        .numero.vendido {
+            background-color: #ff4b4b;
+            color: #ffffff;
+            border-color: #ff4b4b;
+            cursor: not-allowed;
+            opacity: 0.3;
+            text-decoration: line-through;
+        }
+        .formulario {
+            background-color: #161b22;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 2px solid #00ea97;
+            display: none;
+            box-shadow: 0px 4px 15px rgba(0, 234, 151, 0.2);
+        }
+        input {
+            width: 90%;
+            padding: 14px;
+            margin: 12px 0;
+            border-radius: 8px;
+            border: 1px solid #30363d;
+            background-color: #0b0f14;
+            color: white;
+            font-size: 16px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #00ea97;
+        }
+        button {
+            background-color: #25d366;
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 95%;
+            box-shadow: 0px 4px 10px rgba(37, 211, 102, 0.3);
+        }
+        button:hover { background-color: #1ebd58; }
+    </style>
+</head>
+<body>
+
+    <div class="contenedor-principal">
+        <img src="cartel.jpg" class="imagen-cartel" alt="Premios Rifa">
+
+        <h1>⚡ RIFA LA BARATICA No. 1 ⚡</h1>
+        <p class="subtitulo">La hija de la Solución</p>
+
+        <div class="info-rifa">
+            💰 Valor: <strong>$20.000</strong><br>
+            📅 Juega el <strong>18 de Julio de 2026</strong> con el Sinuano Noche
+        </div>
+
+        <p style="color: #8b949e; font-size: 14px;">Toca el número de 4 cifras que deseas comprar:</p>
+
+        <div class="grid-numeros" id="contenedorNumeros"></div>
+
+        <div class="formulario" id="zonaFormulario">
+            <h3 style="margin-top:0; color:#00ea97;">📝 Apartar Boleta</h3>
+            <p>Número seleccionado: <strong id="numElegido" style="color:#d2ff28; font-size: 20px;">-</strong></p>
+            <input type="text" id="nombreCliente" placeholder="Escribe tu nombre y apellido" required>
+            <button onclick="enviarAWhatsApp()">Apartar Número y Enviar a WhatsApp 🚀</button>
+        </div>
+    </div>
+
+    <script>
+        // 🔑 TU NÚMERO DE WHATSAPP PARA ESTA PÁGINA
+        const MI_WHATSAPP = "573142571260"; 
+
+        // Tus 30 números exactos
+        const misNumeros = [
+            "4878", "3614", "2479", "5021", "6271", "7411", "9803", "1223", "0076", "8690",
+            "1979", "1326", "0717", "1241", "3682", "3624", "5022", "8612", "7401", "4868",
+            "3644", "2455", "5038", "6273", "7418", "9804", "1224", "8655", "0089", "4879"
+        ];
+
+        let estadoBoletas = {};
+        misNumeros.forEach(num => {
+            estadoBoletas[num] = 0; 
+        });
+
+        let numeroSeleccionado = null;
+        const contenedor = document.getElementById('contenedorNumeros');
+
+        function cargarBoletas() {
+            contenedor.innerHTML = "";
+            misNumeros.forEach(num => {
+                const div = document.createElement('div');
+                div.innerText = num;
+                
+                if (estadoBoletas[num] === 1) {
+                    div.className = "numero vendido";
+                } else {
+                    div.className = "numero";
+                    div.onclick = () => seleccionarNumero(num, div);
+                }
+                contenedor.appendChild(div);
+            });
+        }
+
+        function seleccionarNumero(num, elemento) {
+            const anterior = document.querySelector('.numero.seleccionado');
+            if (anterior) anterior.classList.remove('seleccionado');
+
+            numeroSeleccionado = num;
+            elemento.classList.add('seleccionado');
+
+            document.getElementById('numElegido').innerText = num;
+            document.getElementById('zonaFormulario').style.display = "block";
+            document.getElementById('zonaFormulario').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function enviarAWhatsApp() {
+            const nombre = document.getElementById('nombreCliente').value.trim();
+            if (!nombre) {
+                alert("Por favor, ingresa tu nombre para registrar la boleta.");
+                return;
+            }
+
+            const textoMensaje = `¡Hola! Vengo de la web y quiero separar una boleta.%0A%0A👤 *Nombre:* ${nombre}%0A🎟️ *Número Elegido:* ${numeroSeleccionado}%0A%0APor favor, pásame los datos de pago para asegurar mi número.`;
+            
+            const urlWhatsApp = `https://api.whatsapp.com/send?phone=${MI_WHATSAPP}&text=${textoMensaje}`;
+
+            estadoBoletas[numeroSeleccionado] = 1;
+            cargarBoletas();
+            document.getElementById('zonaFormulario').style.display = "none";
+            document.getElementById('nombreCliente').value = "";
+
+            window.open(urlWhatsApp, '_blank');
+        }
+
+        cargarBoletas();
+    </script>
+</body>
+</html>
