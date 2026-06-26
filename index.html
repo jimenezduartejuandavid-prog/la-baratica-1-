@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rifa La Baratica No. 1 - Ventas</title>
+    <title>Rifa La Baratica No. 1</title>
     <style>
         body {
             background-color: #0b0f14;
@@ -31,7 +31,6 @@
             margin-top: 0;
             font-size: 16px;
         }
-        /* ESTILO PARA LA FOTO DE TU BOLETA */
         .imagen-cartel {
             width: 100%;
             max-width: 450px;
@@ -121,7 +120,7 @@
 <body>
 
     <div class="contenedor-principal">
-        <img src="cartel.jpg" class="imagen-cartel" alt="Premios Rifa">
+        <img src="cartel.jpg.jpeg" class="imagen-cartel" alt="Premios Rifa">
 
         <h1>⚡ RIFA LA BARATICA No. 1 ⚡</h1>
         <p class="subtitulo">La hija de la Solución</p>
@@ -133,42 +132,58 @@
 
         <p style="color: #8b949e; font-size: 14px;">Toca el número de 4 cifras que deseas comprar:</p>
 
-        <div class="grid-numeros" id="contenedorNumeros"></div>
+        <div class="grid-numeros" id="contenedorNumeros">Cargando boletas...</div>
 
         <div class="formulario" id="zonaFormulario">
             <h3 style="margin-top:0; color:#00ea97;">📝 Apartar Boleta</h3>
             <p>Número seleccionado: <strong id="numElegido" style="color:#d2ff28; font-size: 20px;">-</strong></p>
             <input type="text" id="nombreCliente" placeholder="Escribe tu nombre y apellido" required>
-            <button onclick="enviarAWhatsApp()">Apartar Número y Enviar a WhatsApp 🚀</button>
+            <button onclick="registrarYEnviar()">Apartar Número y Enviar a WhatsApp 🚀</button>
         </div>
     </div>
 
     <script>
-        // 🔑 TU NÚMERO DE WHATSAPP PARA ESTA PÁGINA
         const MI_WHATSAPP = "573142571260"; 
 
-        // Tus 30 números exactos
+        // 🔗 ENLACES DE CONEXIÓN CON GOOGLE CONFIGURADOS
+        const URL_FORM_RESPONSE = "https://docs.google.com/forms/d/e/1FAIpQLSclX8E7bHnVRjFwL89YfHk5NfGvZ8mOkdG9bV6x_v-e6XAwGA/formResponse";
+        const ID_PREGUNTA_NOMBRE = "entry.1039475821"; 
+        const ID_PREGUNTA_NUMERO = "entry.1849502847"; 
+        const URL_EXCEL_CSV = "https://docs.google.com/spreadsheets/d/17KNjc6sLGlnoEa0khxbewA_uwEXAKnKiKbu2vKxRWBA/pub?output=csv";
+
         const misNumeros = [
             "4878", "3614", "2479", "5021", "6271", "7411", "9803", "1223", "0076", "8690",
             "1979", "1326", "0717", "1241", "3682", "3624", "5022", "8612", "7401", "4868",
             "3644", "2455", "5038", "6273", "7418", "9804", "1224", "8655", "0089", "4879"
         ];
 
-        let estadoBoletas = {};
-        misNumeros.forEach(num => {
-            estadoBoletas[num] = 0; 
-        });
-
+        let numerosVendidos = [];
         let numeroSeleccionado = null;
-        const contenedor = document.getElementById('contenedorNumeros');
+
+        async function consultarVendidos() {
+            try {
+                const res = await fetch(URL_EXCEL_CSV);
+                const texto = await res.text();
+                numerosVendidos = [];
+                misNumeros.forEach(num => {
+                    if(texto.includes(num)) {
+                        numerosVendidos.push(num);
+                    }
+                });
+            } catch (error) {
+                console.log("Error consultando base de datos", error);
+            }
+            cargarBoletas();
+        }
 
         function cargarBoletas() {
+            const contenedor = document.getElementById('contenedorNumeros');
             contenedor.innerHTML = "";
             misNumeros.forEach(num => {
                 const div = document.createElement('div');
                 div.innerText = num;
                 
-                if (estadoBoletas[num] === 1) {
+                if (numerosVendidos.includes(num)) {
                     div.className = "numero vendido";
                 } else {
                     div.className = "numero";
@@ -190,26 +205,36 @@
             document.getElementById('zonaFormulario').scrollIntoView({ behavior: 'smooth' });
         }
 
-        function enviarAWhatsApp() {
+        function registrarYEnviar() {
             const nombre = document.getElementById('nombreCliente').value.trim();
             if (!nombre) {
                 alert("Por favor, ingresa tu nombre para registrar la boleta.");
                 return;
             }
 
+            // Enviar datos de forma asíncrona a Google Sheets
+            const datosForm = new FormData();
+            datosForm.append(ID_PREGUNTA_NOMBRE, nombre);
+            datosForm.append(ID_PREGUNTA_NUMERO, numeroSeleccionado);
+
+            fetch(URL_FORM_RESPONSE, {
+                method: "POST",
+                mode: "no-cors",
+                body: datosForm
+            });
+
             const textoMensaje = `¡Hola! Vengo de la web y quiero separar una boleta.%0A%0A👤 *Nombre:* ${nombre}%0A🎟️ *Número Elegido:* ${numeroSeleccionado}%0A%0APor favor, pásame los datos de pago para asegurar mi número.`;
-            
             const urlWhatsApp = `https://api.whatsapp.com/send?phone=${MI_WHATSAPP}&text=${textoMensaje}`;
 
-            estadoBoletas[numeroSeleccionado] = 1;
-            cargarBoletas();
-            document.getElementById('zonaFormulario').style.display = "none";
-            document.getElementById('nombreCliente').value = "";
-
+            alert("¡Número apartado con éxito! Se abrirá WhatsApp para finalizar.");
             window.open(urlWhatsApp, '_blank');
+            
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
         }
 
-        cargarBoletas();
+        consultarVendidos();
     </script>
 </body>
 </html>
